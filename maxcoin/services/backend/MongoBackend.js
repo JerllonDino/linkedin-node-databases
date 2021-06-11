@@ -30,7 +30,17 @@ class MongoBackend {
     return false;
   }
 
-  async insert() {}
+  async insert() {
+    const data = await this.coinAPI.fetch();
+    const documents = [];
+    Object.entries(data.bpi).forEach((entry) => {
+      documents.push({
+        date: entry[0],
+        value: entry[1],
+      });
+    });
+    return this.collection.insertMany(documents);
+  }
 
   async getMax() {}
 
@@ -44,6 +54,13 @@ class MongoBackend {
       throw new Error("Connecting to MongoDB failed");
     }
     console.timeEnd("mongodb-connect");
+
+    console.info("Inserting into MongoDB");
+    console.time("mongodb-insert");
+    const insertResult = await this.insert();
+    console.timeEnd("mongodb-insert");
+
+    console.log(`Inserted ${insertResult.result.n} documents into MongoDB`);
 
     console.log("Connection to MongoDB");
     console.time("mongodb-disconnect");
