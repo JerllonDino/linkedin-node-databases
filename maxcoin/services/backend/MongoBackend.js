@@ -42,7 +42,9 @@ class MongoBackend {
     return this.collection.insertMany(documents);
   }
 
-  async getMax() {}
+  async getMax() {
+    return this.collection.findOne({}, { sort: { value: 1 } });
+  }
 
   async max() {
     console.log("Connection to MongoDB");
@@ -62,10 +64,20 @@ class MongoBackend {
 
     console.log(`Inserted ${insertResult.result.n} documents into MongoDB`);
 
+    console.info("Querying MongoDB");
+    console.time("mongodb-find");
+    const doc = await this.getMax();
+    console.timeEnd("mongodb-find");
+
     console.log("Connection to MongoDB");
     console.time("mongodb-disconnect");
     await this.disconnect();
     console.timeEnd("mongodb-disconnect");
+
+    return {
+      date: doc.date,
+      value: doc.value,
+    };
   }
 }
 
